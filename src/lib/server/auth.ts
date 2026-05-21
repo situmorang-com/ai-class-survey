@@ -1,6 +1,7 @@
 import { error, type RequestEvent } from '@sveltejs/kit';
+import { env } from '$env/dynamic/private';
 
-const PASSWORD = process.env.ADMIN_PASSWORD ?? 'changeme';
+const PASSWORD = env.ADMIN_PASSWORD ?? 'changeme';
 export const ADMIN_COOKIE = 'admin_session';
 
 export function checkPassword(input: string): boolean {

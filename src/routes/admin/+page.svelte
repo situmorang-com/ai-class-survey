@@ -77,6 +77,7 @@
 			</div>
 			<div class="actions">
 				<input class="search" type="search" bind:value={q} placeholder="cari nama / email / WA…" />
+				<a class="btn live-btn" href="/admin/live">🔴 Live</a>
 				<a class="btn" href="/admin/export.xlsx">⬇ Ekspor .xlsx</a>
 				<form method="POST" action="?/logout"><button class="btn ghost" type="submit">Keluar</button></form>
 			</div>
@@ -165,6 +166,7 @@
 
 	.btn { display: inline-flex; align-items: center; padding: 0.55rem 1rem; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white; font-weight: 600; text-decoration: none; font-size: 0.9rem; }
 	.btn.ghost { background: rgba(255,255,255,0.06); color: var(--text); }
+	.btn.live-btn { background: linear-gradient(135deg, #ff5470, #ff8a5b); box-shadow: 0 6px 18px rgba(255, 84, 112, 0.35); }
 	.cta { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white; padding: 0.8rem 1.4rem; border-radius: 999px; font-weight: 600; }
 
 	.muted { color: var(--muted); }

@@ -1,8 +1,39 @@
 <script lang="ts">
 	import { fly, fade, scale, slide } from 'svelte/transition';
 	import { cubicOut, elasticOut, backOut } from 'svelte/easing';
+	import { onMount } from 'svelte';
 	import { survey } from '$lib/survey';
 	import { validateContact } from '$lib/validate';
+
+	let sessionId = '';
+	function genId(): string {
+		try {
+			return crypto.randomUUID();
+		} catch {
+			return Date.now().toString(36) + Math.random().toString(36).slice(2);
+		}
+	}
+	onMount(() => {
+		try {
+			sessionId = localStorage.getItem('aics_sid') ?? '';
+			if (!sessionId) {
+				sessionId = genId();
+				localStorage.setItem('aics_sid', sessionId);
+			}
+		} catch {
+			sessionId = genId();
+		}
+	});
+
+	function track(type: 'started' | 'linkedin_click' | 'mentor_click') {
+		if (!sessionId) return;
+		fetch('/api/event', {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({ sessionId, type }),
+			keepalive: true
+		}).catch(() => {});
+	}
 
 	type Stage = 'intro' | 'contact' | 'questions' | 'submitting' | 'done' | 'error';
 
@@ -72,7 +103,7 @@
 			const res = await fetch('/api/submit', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ name, email, whatsapp, answers })
+				body: JSON.stringify({ name, email, whatsapp, answers, sessionId })
 			});
 			if (!res.ok) {
 				const body = await res.json().catch(() => null);
@@ -80,6 +111,7 @@
 			}
 			stage = 'done';
 			confettiBurst();
+			track('linkedin_click');
 			window.open(LINKEDIN_URL, '_blank', 'noopener,noreferrer');
 		} catch (e: any) {
 			errorMsg = e?.message ?? 'Ada yang salah';
@@ -88,9 +120,11 @@
 	}
 
 	function openLinkedIn() {
+		track('linkedin_click');
 		window.open(LINKEDIN_URL, '_blank', 'noopener,noreferrer');
 	}
 	function openMentorship() {
+		track('mentor_click');
 		window.open(MENTORSHIP_URL, '_blank', 'noopener,noreferrer');
 	}
 
@@ -117,7 +151,7 @@
 			<h1>{survey.title}</h1>
 			<p class="intro">{survey.intro}</p>
 			<p class="meta">~ 2 menit • {total} pertanyaan • butuh data kontak singkat</p>
-			<button class="cta" onclick={() => (stage = 'contact')}>
+			<button class="cta" onclick={() => { track('started'); stage = 'contact'; }}>
 				<span>Mulai</span><span class="arrow">→</span>
 			</button>
 		</section>
