@@ -7,6 +7,8 @@
 	import type { Stats } from '$lib/server/stats';
 
 	let { data }: { data: PageData } = $props();
+	// strip protocol for cleaner display
+	const displayUrl = $derived(data.surveyUrl.replace(/^https?:\/\//, '').replace(/\/$/, ''));
 	/* eslint-disable svelte/no-state-referenced-locally */
 	// svelte-ignore state_referenced_locally
 	let stats = $state<Stats>(data.stats);
@@ -100,6 +102,18 @@
 </header>
 
 <main>
+	<!-- Scan to join banner -->
+	<section class="join" in:fly={{ y: -20, duration: 500, easing: cubicOut }}>
+		<div class="qr">
+			{@html data.qrSvg}
+		</div>
+		<div class="join-text">
+			<div class="join-eyebrow">📱 Scan untuk ikutan</div>
+			<div class="join-url">{displayUrl}</div>
+			<div class="join-sub">Buka kamera HP kamu, arahkan ke QR — atau ketik link di atas.</div>
+		</div>
+	</section>
+
 	<!-- Top funnel cards -->
 	<section class="cards">
 		{#each [
@@ -310,6 +324,81 @@
 		font-size: 0.9rem;
 	}
 	.bar-actions a:hover { color: var(--text); }
+
+	.join {
+		display: flex;
+		align-items: center;
+		gap: 2rem;
+		padding: 1.5rem 2rem;
+		margin-bottom: 1.5rem;
+		background: linear-gradient(135deg, rgba(180, 107, 255, 0.15), rgba(107, 230, 255, 0.1));
+		border: 1px solid rgba(180, 107, 255, 0.3);
+		border-radius: 24px;
+		backdrop-filter: blur(20px);
+		position: relative;
+		overflow: hidden;
+	}
+	.join::before {
+		content: '';
+		position: absolute;
+		inset: -1px;
+		background: linear-gradient(120deg, transparent 40%, rgba(255, 255, 255, 0.08) 50%, transparent 60%);
+		background-size: 200% 100%;
+		animation: shimmer 6s linear infinite;
+		pointer-events: none;
+	}
+	@keyframes shimmer {
+		0% { background-position: 200% 0; }
+		100% { background-position: -100% 0; }
+	}
+	.qr {
+		flex-shrink: 0;
+		background: white;
+		padding: 0.75rem;
+		border-radius: 16px;
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+		line-height: 0;
+		display: flex;
+	}
+	.qr :global(svg) {
+		width: 180px;
+		height: 180px;
+		display: block;
+	}
+	.join-text { flex: 1; min-width: 0; }
+	.join-eyebrow {
+		display: inline-block;
+		padding: 0.3rem 0.8rem;
+		background: rgba(255, 255, 255, 0.1);
+		border-radius: 999px;
+		font-size: 0.78rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		color: var(--text);
+		margin-bottom: 0.75rem;
+	}
+	.join-url {
+		font-size: clamp(2rem, 5vw, 3.4rem);
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		line-height: 1.05;
+		background: linear-gradient(90deg, #ffffff, #ffd86b, #ff6bd6, #ffffff);
+		background-size: 200% 100%;
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+		animation: gradient-shift 5s ease infinite;
+		word-break: break-all;
+	}
+	.join-sub {
+		color: var(--muted);
+		font-size: 0.95rem;
+		margin-top: 0.5rem;
+	}
+	@media (max-width: 640px) {
+		.join { flex-direction: column; text-align: center; gap: 1rem; padding: 1.25rem; }
+		.qr :global(svg) { width: 160px; height: 160px; }
+	}
 
 	.cards {
 		display: grid;
